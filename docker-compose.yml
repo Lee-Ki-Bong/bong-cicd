@@ -25,7 +25,7 @@ services:
     build:
       context: .
       dockerfile: ${JENKINS_DOCKER_FILE}
-    container_name: jenkins_1
+    container_name: jenkins
     ports:
       - "8081:8080"
     environment:
@@ -39,9 +39,9 @@ services:
     networks:
       - bong-ci-cd
 
-  gitlab-be:
+  project-repository:
     command: sleep infinity
-    container_name: gitlab-be
+    container_name: project-repository
     build:
       context: .
       dockerfile: ${BACKEND_DOCKER_FILE}
@@ -52,6 +52,19 @@ services:
     volumes:
       - '${PROJECT_ROOT_DIR}/project-root:/home'
     working_dir: /home
+    networks:
+      - bong-ci-cd
+
+  harbor:
+    image: goharbor/harbor-core:v2.4.1
+    container_name: harbor
+    environment:
+      - CORE_URL=http://harbor.local
+      - REGISTRY_STORAGE_PROVIDER_NAME=filesystem
+    ports:
+      - "8083:80"  # Change Harbor's HTTP port to avoid conflict with GitLab
+    volumes:
+      - ${PROJECT_ROOT_DIR}/harbor/data:/data
     networks:
       - bong-ci-cd
 

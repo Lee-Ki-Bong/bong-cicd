@@ -1,6 +1,6 @@
 # sudo docker exec -it gitlab /bin/bash
 # cat /etc/gitlab/initial_root_password
-5sojzGmTLBdZpCVsZdbR373h1pMEP5UgjW6idc6I4FI=
+
 
 # external_url 안된다면 cat /etc/gitlab/gitlab.rb > 아래 ssl 관련 내용 추가
 # $ sudo gitlab-ctl reconfigure	#설정파일 반영
