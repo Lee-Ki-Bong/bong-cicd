@@ -1,0 +1,60 @@
+version: '3.7'
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    hostname: gitlab.local
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.local'
+        gitlab_rails['lfs_enabled'] = true
+        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+    ports:
+      - '80:80'
+      - '443:443'
+      - '2224:22'
+    volumes:
+      - '${PROJECT_ROOT_DIR}/gitlab/config:/etc/gitlab'
+      - '${PROJECT_ROOT_DIR}/gitlab/logs:/var/log/gitlab'
+      - '${PROJECT_ROOT_DIR}/gitlab/data:/var/opt/gitlab'
+    networks:
+      - bong-ci-cd
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: ${JENKINS_DOCKER_FILE}
+    container_name: jenkins_1
+    ports:
+      - "8081:8080"
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - ${PROJECT_ROOT_DIR}/jenkins/var/jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${PROJECT_ROOT_DIR}/jenkins/data:/data
+    user: root
+    restart: unless-stopped
+    networks:
+      - bong-ci-cd
+
+  gitlab-be:
+    command: sleep infinity
+    container_name: gitlab-be
+    build:
+      context: .
+      dockerfile: ${BACKEND_DOCKER_FILE}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gitlab      
+    volumes:
+      - '${PROJECT_ROOT_DIR}/project-root:/home'
+    working_dir: /home
+    networks:
+      - bong-ci-cd
+
+networks:
+  bong-ci-cd:
+    driver: bridge
